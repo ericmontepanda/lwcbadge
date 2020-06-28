@@ -193,7 +193,7 @@ export default class BoatSearchResults extends LightningElement {
             this.dispatchEvent(new CustomEvent('loading'));
             //loadingEvent = new CustomEvent('loading');
         } else {
-            this.dispatchEvent(new CustomEvent('loading'));
+            this.dispatchEvent(new CustomEvent('doneloading'));
             //loadingEvent = new CustomEvent('doneloading');
         }
         //console.log('what is my loading..... ' + JSON.stringify(loadingEvent));
