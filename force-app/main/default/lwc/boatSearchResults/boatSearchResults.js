@@ -16,12 +16,17 @@ import {
 } from 'lightning/platformShowToastEvent';
 import {
     APPLICATION_SCOPE,
+    createMessageContext,
     MessageContext,
+    publish,
+    releaseMessageContext,
     subscribe,
+    unsubscribe
 } from 'lightning/messageService';
 
 import BOATMC from '@salesforce/messageChannel/BoatMessageChannel__c';
 import getBoats from '@salesforce/apex/BoatDataService.getBoats';
+import getSimilarBoats from '@salesforce/apex/BoatDataService.getSimilarBoats';
 
 import NAME_FIELD from '@salesforce/schema/Boat__c.Name';
 import LENGTH_FIELD from '@salesforce/schema/Boat__c.Length__c';
@@ -96,18 +101,21 @@ export default class BoatSearchResults extends LightningElement {
         //await refreshApex(this.boats); 
         this.isLoading = true;
         await refreshApex(this.boats)
-          .then(() => this.notifyLoading(false))
-          .catch(() => this.notifyLoading(true));
+            .then(() => this.notifyLoading(false))
+            .catch(() => this.notifyLoading(true));
     }
 
     // this function must update selectedBoatId and call sendMessageService
     updateSelectedTile(event) {
         this.selectedBoatId = event.detail.boatId;
-        this.sendMessageService();
+        this.sendMessageService(this.selectedBoatId);
     }
 
     // Publishes the selected boat Id on the BoatMC.
-    sendMessageService(boatId) {}
+    sendMessageService(boatId) {
+        const payload = { recordId: boatId };
+        publish(this.messageContext, BOATMC, payload);
+    }
 
     // This method must save the changes in the Boat Editor
     // Show a toast message with the title
@@ -123,7 +131,7 @@ export default class BoatSearchResults extends LightningElement {
 
         const promises = recordInputs.map(recordInput => updateRecord(recordInput));
 
-        Promise.all(promises).then(d => {
+        /*Promise.all(promises).then(d => {
             this.dispatchEvent(
                 new ShowToastEvent({
                     title: 'Success',
@@ -141,22 +149,54 @@ export default class BoatSearchResults extends LightningElement {
             this.dispatchEvent(
                 new ShowToastEvent({
                     title: 'Error',
-                    message: error,
+                    message: error.body.message,
                     variant: 'error'
                 })
             );
             // Handle error
-        });
+        });*/
+
+        Promise.all(promises)
+            .then(() => {
+                this.dispatchEvent(
+                    new ShowToastEvent({
+                        title: 'Success',
+                        message: 'Ship It!',
+                        variant: 'success'
+                    })
+                );
+                // Clear all draft values
+                this.draftValues = [];
+
+                // Display fresh data in the datatable
+                this.refresh();
+            })
+            .catch(error => {
+                this.dispatchEvent(
+                    new ShowToastEvent({
+                        title: 'Error',
+                        message: error.body.message,
+                        variant: 'error'
+                    })
+                );
+                this.refresh();
+            })
+            .finally(() => {
+                this.refresh();
+            });
     }
     // Check the current value of isLoading before dispatching the doneloading or loading custom event
     notifyLoading(isLoading) {
         let loadingEvent;
-        if (isLoading) {
-            loadingEvent = new CustomEvent('loading');
+        this.isLoading = isLoading;
+        if (this.isLoading === true) {
+            this.dispatchEvent(new CustomEvent('loading'));
+            //loadingEvent = new CustomEvent('loading');
         } else {
-            loadingEvent = new CustomEvent('doneloading');
+            this.dispatchEvent(new CustomEvent('loading'));
+            //loadingEvent = new CustomEvent('doneloading');
         }
-        console.log('what is my loading..... ' + JSON.stringify(loadingEvent));
-        this.dispatchEvent(loadingEvent);
+        //console.log('what is my loading..... ' + JSON.stringify(loadingEvent));
+        //this.dispatchEvent(loadingEvent);
     }
 }
