@@ -70,7 +70,17 @@ export default class BoatSearchResults extends LightningElement {
 
     // public function that updates the existing boatTypeId property
     // uses notifyLoading
-    searchBoats(boatTypeId) {}
+    searchBoats(boatTypeId) {
+        this.notifyLoading(true);
+        getBoats({
+            boatTypeId: boatTypeId
+        }).then(result =>{
+            this.boats = result
+            this.notifyLoading(false);
+        });
+
+        
+    }
 
     // this public function must refresh the boats asynchronously
     // uses notifyLoading
@@ -108,5 +118,7 @@ export default class BoatSearchResults extends LightningElement {
             .finally(() => {});
     }
     // Check the current value of isLoading before dispatching the doneloading or loading custom event
-    notifyLoading(isLoading) {}
+    notifyLoading(isLoading) {
+        this.isLoading = isLoading;
+    }
 }
