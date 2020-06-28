@@ -9,6 +9,9 @@ import {
     MessageContext,
     subscribe,
 } from 'lightning/messageService';
+
+import getBoats from '@salesforce/apex/BoatDataService.getBoats';
+
 import BOATMC from '@salesforce/messageChannel/BoatMessageChannel__c';
 export default class BoatSearchResults extends LightningElement {
     @track selectedBoatId;
@@ -20,7 +23,13 @@ export default class BoatSearchResults extends LightningElement {
     // wired message context
     @wire(MessageContext)
     messageContext;
-    wiredBoats(result) {}
+
+    @wire(getBoats, {
+        boatTypeId: '$boatTypeId'
+    }) wiredBoats(result) {
+        console.log('what are my results...  ' +JSON.stringify(result));
+        this.boats = result;
+    }
 
     // public function that updates the existing boatTypeId property
     // uses notifyLoading
