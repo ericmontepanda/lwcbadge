@@ -21,6 +21,7 @@ export default class BoatsNearMe extends LightningElement {
     @track latitude;
     @track longitude;
     @track error;
+    @track locations = [];
 
     // Add the wired method from the Apex Class
     // Name it getBoatsByLocation, and use latitude, longitude and boatTypeId
@@ -34,6 +35,18 @@ export default class BoatsNearMe extends LightningElement {
         data
     }) {
         if (data) {
+            //let parseData = JSON.parse(data);
+            /*console.log('d.... ' +JSON.stringify( parseData));
+            parseData.forEach(loc => {
+                this.locations.push({
+                    title: loc.Name,
+                    location: {
+                        Latitude: loc.Geolocation__Latitude__s,
+                        Longitude: loc.Geolocation__Longitude__s
+                    },
+                    icon: 'utility:salesforce1'
+                });
+            });*/
             this.createMapMarkers(data);
             this.isLoading = false;
         } else if (error) {
@@ -66,7 +79,8 @@ export default class BoatsNearMe extends LightningElement {
                 console.log(position.coords.latitude);
                 this.latitude = position.coords.latitude;
                 this.longitude = position.coords.longitude;
-                console.log(this.strLatitude);
+                console.log(this.latitude);
+                console.log(this.latitude);
             },
             (e) => {
                 this.strError = e.message;
@@ -79,7 +93,7 @@ export default class BoatsNearMe extends LightningElement {
     // Creates the map markers
     createMapMarkers(boatData) {
         this.mapMarkers = [];
-        console.log('what is my boatdat... ' + JSON.stringify(this.boatData));
+        console.log('what is my boatdat... ' + JSON.stringify(boatData));
         this.mapMarkers.push({
             title: LABEL_YOU_ARE_HERE,
             location: {
@@ -88,14 +102,18 @@ export default class BoatsNearMe extends LightningElement {
             },
             icon: ICON_STANDARD_USER
         });
-        boatData.forEach(d => {
+        console.log('boatdat 105... ' +JSON.stringify(boatData));
+        let parseData = JSON.parse(boatData);
+        console.log('107 ' +JSON.stringify(parseData));
+        parseData.forEach(d => {
+            console.log('.... boats near me... ' +d.Name);
             this.mapMarkers.push({
                 title: d.Name,
-                value: d.Id,
                 location: {
                     Latitude: d.Geolocation__Latitude__s,
                     Longitude: d.Geolocation__Longitude__s
-                }
+                },
+                icon: ICON_STANDARD_USER
             });
         });
         this.isLoading = false;
