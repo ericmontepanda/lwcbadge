@@ -92,16 +92,19 @@ export default class BoatSearchResults extends LightningElement {
 
     // this public function must refresh the boats asynchronously
     // uses notifyLoading
-
-    refresh() {
-        console.log('BREAK');
-        this.notifyLoading(false);
-        return refreshApex(this.boats);
-
+    @api async refresh() {
+        //await refreshApex(this.boats); 
+        this.isLoading = true;
+        await refreshApex(this.boats)
+          .then(() => this.notifyLoading(false))
+          .catch(() => this.notifyLoading(true));
     }
 
     // this function must update selectedBoatId and call sendMessageService
-    updateSelectedTile() {}
+    updateSelectedTile(event) {
+        this.selectedBoatId = event.detail.boatId;
+        this.sendMessageService();
+    }
 
     // Publishes the selected boat Id on the BoatMC.
     sendMessageService(boatId) {}
@@ -111,28 +114,37 @@ export default class BoatSearchResults extends LightningElement {
     // clear lightning-datatable draft values
 
     handleSave(event) {
-        const recordInputs =  event.detail.draftValues.slice().map(draft => {
+        const recordInputs = event.detail.draftValues.slice().map(draft => {
             const fields = Object.assign({}, draft);
-            return { fields };
+            return {
+                fields
+            };
         });
-   
+
         const promises = recordInputs.map(recordInput => updateRecord(recordInput));
-       
+
         Promise.all(promises).then(d => {
             this.dispatchEvent(
                 new ShowToastEvent({
                     title: 'Success',
-                    message: 'All Contacts updated',
+                    message: 'Ship It!',
                     variant: 'success'
                 })
             );
-             // Clear all draft values
-             this.draftValues = [];
-   
-             // Display fresh data in the datatable
+            // Clear all draft values
+            this.draftValues = [];
+
+            // Display fresh data in the datatable
             this.refresh();
-             // return refreshApex(this.boats);
+            // return refreshApex(this.boats);
         }).catch(error => {
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: 'Error',
+                    message: error,
+                    variant: 'error'
+                })
+            );
             // Handle error
         });
     }
