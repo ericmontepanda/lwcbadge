@@ -1,5 +1,5 @@
 <template>
-  <template if:true={boats}>
+  <template if:true={boats.data}>
     <lightning-tabset variant="scoped">
 
       <lightning-tab label="Gallery">
@@ -25,8 +25,12 @@
       <lightning-tab label="Boat Editor">
         <!-- Scrollable div and lightning datatable go here -->
         <div class="slds-scrollable_y">
-          <lightning-datatable hide-checkbox-column key-field="id" data={boats.data} columns={columns}
-          onsave={handleSave}>
+          <!--<lightning-datatable hide-checkbox-column key-field="id" data={boats.data} columns={columns}
+            onsave={handleSave} draft-values={draftValues}>
+          </lightning-datatable>-->
+
+          <lightning-datatable key-field="Id" data={boats.data} columns={columns} hide-checkbox-column="true"
+            show-row-number-column="true" onsave={handleSave} draft-values={draftValues}>
           </lightning-datatable>
         </div>
       </lightning-tab>

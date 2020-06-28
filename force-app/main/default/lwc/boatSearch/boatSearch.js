@@ -1,16 +1,47 @@
- // imports
- export default class BoatSearch extends LightningElement {
-   isLoading = false;
+import {
+  LightningElement,
+  track,
+  wire,
+  api
+} from 'lwc';
 
-   // Handles loading event
-   handleLoading() {}
+import {
+  NavigationMixin
+} from 'lightning/navigation';
+export default class BoatSearch extends NavigationMixin(LightningElement) {
+  @track isLoading = false;
+  @track boatTypeId;
 
-   // Handles done loading event
-   handleDoneLoading() {}
+  // Handles loading event
+  handleLoading() {
+    console.log('still here...');
+    this.isLoading = true;
+  }
 
-   // Handles search boat event
-   // This custom event comes from the form
-   searchBoats(event) {}
+  // Handles done loading event
+  handleDoneLoading() {
+    console.log('DONE...');
+    this.isLoading = false;
+  }
 
-   createNewBoat() {}
- }
+  // Handles search boat event
+  // This custom event comes from the form
+  searchBoats(event) {
+    this.boatTypeId = event.detail.boatTypeId;
+    console.log('what is my event.... pareten' + JSON.stringify(this.boatTypeId));
+    this.template.querySelector('c-boat-search-results').searchBoats(this.boatTypeId);
+    
+    
+    //searchBoats(event.boatTypeId);
+  }
+
+  createNewBoat() {
+    this[NavigationMixin.Navigate]({
+      type: 'standard__objectPage',
+      attributes: {
+        objectApiName: 'Boat__c',
+        actionName: 'new'
+      }
+    });
+  }
+}

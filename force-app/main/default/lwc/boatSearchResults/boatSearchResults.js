@@ -30,9 +30,10 @@ import DESCRIPTION_FIELD from '@salesforce/schema/Boat__c.Description__c';
 
 export default class BoatSearchResults extends LightningElement {
     @track selectedBoatId;
+    @track draftValues = [];
     @track columns = [{
             label: 'Name',
-            fieldName: 'name',
+            fieldName: 'Name',
             editable: true
         },
         {
@@ -70,21 +71,34 @@ export default class BoatSearchResults extends LightningElement {
 
     // public function that updates the existing boatTypeId property
     // uses notifyLoading
-    searchBoats(boatTypeId) {
+    @api searchBoats(boatTypeId) {
+        //this.boats = [];
         this.notifyLoading(true);
-        getBoats({
-            boatTypeId: boatTypeId
-        }).then(result =>{
-            this.boats = result
-            this.notifyLoading(false);
-        });
+        console.log('BOAT>>> ' + JSON.stringify(boatTypeId));
+        this.boatTypeId = boatTypeId;
+        this.notifyLoading(false);
+        //this.notifyLoading(true);
+        /*getBoats({
+            boatTypeId: '$boatTypeId'
+        }).then(
+            this.refresh()
+        );//result => {
+            //this.boats = result
+            //this.notifyLoading(false);
+        //});*/
 
-        
+
     }
 
     // this public function must refresh the boats asynchronously
     // uses notifyLoading
-    refresh() {}
+
+    refresh() {
+        console.log('BREAK');
+        this.notifyLoading(false);
+        return refreshApex(this.boats);
+
+    }
 
     // this function must update selectedBoatId and call sendMessageService
     updateSelectedTile() {}
@@ -95,30 +109,42 @@ export default class BoatSearchResults extends LightningElement {
     // This method must save the changes in the Boat Editor
     // Show a toast message with the title
     // clear lightning-datatable draft values
-    handleSave() {
-        const recordInputs = event.detail.draftValues.slice().map(draft => {
+
+    handleSave(event) {
+        const recordInputs =  event.detail.draftValues.slice().map(draft => {
             const fields = Object.assign({}, draft);
-            return {
-                fields
-            };
+            return { fields };
         });
-        const promises = recordInputs.map(recordInput =>
-            updateRecord(recordInput));
-        Promise.all(promises)
-            .then(() => {
-                this.dispatchEvent(
-                    new ShowToastEvent({
-                        title: 'Success',
-                        message: 'Ship It!',
-                        variant: 'success'
-                    })
-                );
-            })
-            .catch(error => {})
-            .finally(() => {});
+   
+        const promises = recordInputs.map(recordInput => updateRecord(recordInput));
+       
+        Promise.all(promises).then(d => {
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: 'Success',
+                    message: 'All Contacts updated',
+                    variant: 'success'
+                })
+            );
+             // Clear all draft values
+             this.draftValues = [];
+   
+             // Display fresh data in the datatable
+            this.refresh();
+             // return refreshApex(this.boats);
+        }).catch(error => {
+            // Handle error
+        });
     }
     // Check the current value of isLoading before dispatching the doneloading or loading custom event
     notifyLoading(isLoading) {
-        this.isLoading = isLoading;
+        let loadingEvent;
+        if (isLoading) {
+            loadingEvent = new CustomEvent('loading');
+        } else {
+            loadingEvent = new CustomEvent('doneloading');
+        }
+        console.log('what is my loading..... ' + JSON.stringify(loadingEvent));
+        this.dispatchEvent(loadingEvent);
     }
 }
