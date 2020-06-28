@@ -93,6 +93,7 @@ export default class FiveStarRating extends NavigationMixin(LightningElement) {
         const fireEvent = new CustomEvent('ratingchange', {
             detail: { rating: rating }
         });
+        console.log('firing event... ' +fireEvent);
         this.dispatchEvent(fireEvent);
     }
 }
