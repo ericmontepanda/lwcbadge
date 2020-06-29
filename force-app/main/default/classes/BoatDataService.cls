@@ -1,23 +1,23 @@
 public with sharing class BoatDataService {
-
+    
     public static final String LENGTH_TYPE = 'Length'; 
     public static final String PRICE_TYPE = 'Price'; 
     public static final String TYPE_TYPE = 'Type'; 
-
+    
     @AuraEnabled(cacheable=true)
     public static List<Boat__c> getBoats(String boatTypeId) {
         // Without an explicit boatTypeId, the full list is desired
         String query = 'SELECT '
-                     + 'Name, Description__c, Geolocation__Latitude__s, '
-                     + 'Geolocation__Longitude__s, Picture__c, Contact__r.Name, '
-                     + 'BoatType__c, BoatType__r.Name, Length__c, Price__c '
-                     + 'FROM Boat__c';
+            + 'Name, Description__c, Geolocation__Latitude__s, '
+            + 'Geolocation__Longitude__s, Picture__c, Contact__r.Name, '
+            + 'BoatType__c, BoatType__r.Name, Length__c, Price__c '
+            + 'FROM Boat__c';
         if (String.isNotBlank(boatTypeId)) {
             query += ' WHERE BoatType__c = :boatTypeId';
         }
         return Database.query(query);
     }
-
+    
     @AuraEnabled(cacheable=true)
     public static List<Boat__c> getSimilarBoats(Id boatId, String similarBy) {
         List<Boat__c> similarBoats = new List<Boat__c>();
@@ -60,41 +60,46 @@ public with sharing class BoatDataService {
     @AuraEnabled(cacheable=true)
     public static List<BoatType__c> getBoatTypes(string boatTypeId) {
         /*return [SELECT Name, Id FROM BoatType__c 
-        where id =: boatTypeId
-        ORDER BY Name];*/
-
+where id =: boatTypeId
+ORDER BY Name];*/
+        
         // Without an explicit boatTypeId, the full list is desired
         String query = 'SELECT Name, Id From BoatType__c';
         if (String.isNotBlank(boatTypeId)) {
             query += ' WHERE Id = :boatTypeId';
         }
-
+        
         query += ' Order BY Name';
         return Database.query(query);
     }
-
+    
     @AuraEnabled
     public static List<BoatReview__c> getAllReviews(Id boatId) {
-        return [
-            SELECT
-                Id,
-                Name,
-                Comment__c,
-                Rating__c,
-                LastModifiedDate,
-                CreatedDate,
-                CreatedBy.Name,
-                CreatedBy.SmallPhotoUrl,
-                CreatedBy.CompanyName
-            FROM
-                BoatReview__c
-            WHERE
-                Boat__c =:boatId
-            ORDER BY
-                CreatedDate DESC
-        ];
+        system.debug('id... ' +boatId);
+        List <BoatReview__c> listBoats = [SELECT
+                                          Id,
+                                          Name,
+                                          Comment__c,
+                                          Rating__c,
+                                          LastModifiedDate,
+                                          CreatedDate,
+                                          CreatedBy.Name,
+                                          CreatedBy.SmallPhotoUrl,
+                                          CreatedBy.CompanyName,
+                                          CreatedBy.Id
+                                          FROM
+                                          BoatReview__c
+                                          WHERE
+                                          Boat__c =:boatId
+                                          ORDER BY
+                                          CreatedDate DESC
+                                         ];
+        system.debug('lll... ' +listBoats);
+        return listBoats;
+        
+        
     }
-
+    
     // Assume this may be an API that return this data, not a SOQL query
     @AuraEnabled(cacheable=true)
     public static String getBoatsByLocation(Decimal latitude, Decimal longitude, String boatTypeId) {

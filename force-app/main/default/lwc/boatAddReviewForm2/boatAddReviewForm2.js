@@ -14,7 +14,7 @@ const TOAST_TITLE = 'Review Created!';
 const TOAST_SUCCESS_VARIANT = 'success';
 
 
-export default class BoatAddReviewForm extends LightningElement {
+export default class BoatAddReviewForm2 extends LightningElement {
     // Private
     boatId;
     @track rating;

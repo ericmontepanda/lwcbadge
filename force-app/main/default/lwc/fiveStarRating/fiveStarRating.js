@@ -19,14 +19,14 @@ import {
 import {
     NavigationMixin
 } from 'lightning/navigation';
-const TOAST_ERROR_TITLE = 'Error loading five-star';
+const TOAST_ERROR_TITLE = 'Error loading five-star';st
 const ERROR_TITLE = 'Error loading five-star';
 const ERROR_VARIANT = 'error';
 
 export default class FiveStarRating extends NavigationMixin(LightningElement) {
     //initialize public readOnly and value properties
-    @track readOnly = true;
-    @track value;
+    @api readOnly = false;
+    @api value;
 
     @track editedValue;
     @track isRendered;
